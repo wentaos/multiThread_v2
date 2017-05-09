@@ -14,10 +14,12 @@ public class DistResource {
      * 分配ID
      */
     public static void distId(IDInfo idInfo){
-        long max_id = Memory.MAX_ID;
+        // 这里需要每次查询一次最大ID
+        long max_id = Memory.MAX_ID;// 现在是写固定的
         // 分配资源时保证线程安全
         synchronized (DistResource.class){
-            if(Memory.isDist()){// 可以分配
+            if(Memory.isDist()){// 可以分配：检查endId 是否 <= maxId
+                // 将之前的当前最大ID作为现在的初始ID
                 Long CURR_MAX_ID = Memory.CURR_MAX_ID;
                 idInfo.setStartId(CURR_MAX_ID + 1);
                 idInfo.setCurrId(CURR_MAX_ID + 1);

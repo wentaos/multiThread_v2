@@ -1,7 +1,7 @@
 package com.winchannel.utils;
 
-import com.sun.media.sound.DLSInfo;
 import com.winchannel.bean.IDInfo;
+import com.winchannel.data.Constant;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -20,7 +20,9 @@ public class IDInfoUtil {
 
     private static boolean isPathExists = false;
 
-    // 检查文件是否存在
+    /**
+     * 检查文件是否存在
+      */
     static {
         File path = new File(ID_INFO_PATH);
         if(!path.exists()){// 目录不存在
@@ -37,6 +39,7 @@ public class IDInfoUtil {
                 if(!createSuccess){
                     throw new RuntimeException(resourceFilePath+" 文件创建失败！");
                 }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -47,7 +50,7 @@ public class IDInfoUtil {
     /**
      * 记录每个线程的IDInfo数据
      */
-    public static void saveIDInfoPoint(IDInfo idInfo){
+    public static boolean saveIDInfoPoint(IDInfo idInfo){
         String threadName=idInfo.getThreadName();
         long startId = idInfo.getStartId();
         long currId = idInfo.getCurrId();
@@ -55,8 +58,54 @@ public class IDInfoUtil {
         String key = threadName;
         String value = startId+"-"+currId+"-"+endId;
         // 设置数据
-        setValue(key,value);
+        return setValue(key,value);
     }
+
+
+    /**
+     * 获取一个IDInfo
+     */
+    public static IDInfo getIDInfo(String threadName){
+        String value = getValue(threadName);
+        if(value==null || value.trim().length()==0){
+            return null;
+        }
+        String[] idInfos = value.split("-");
+        IDInfo idInfo = new IDInfo();
+        if(idInfos!=null && idInfos.length==3) {
+            idInfo.setThreadName(threadName)
+                    .setStartId(Long.parseLong(idInfos[0]))
+                    .setCurrId(Long.parseLong(idInfos[1]))
+                    .setEndId(Long.parseLong(idInfos[2]));
+        }
+        return idInfo;
+    }
+
+
+    /**
+     * 根据历史信息得到最大ID
+     */
+    public static Long getHIS_MAX_ID(int hisThreadNum){
+        List<IDInfo> list = getIDInfoListFromProp(hisThreadNum);
+        if(list!=null && list.size()>0){
+            for (int i=0;i<list.size()-1;i++){
+                for (int j=i+1;j<list.size();j++){
+                    IDInfo info1 = list.get(i);
+                    IDInfo info2 = list.get(j);
+                    long l1 = info1.getEndId();
+                    long l2 = info2.getEndId();
+                    if(l2>l1){
+                        IDInfo temp = info1;
+                        list.set(i,info2);
+                        list.set(j,temp);
+                    }
+                }
+            }
+            return list.get(0).getEndId();
+        }
+        return null;
+    }
+
 
 
     /**
@@ -64,17 +113,21 @@ public class IDInfoUtil {
      * hisThreadNum:上次线程数
      */
     public static List<IDInfo> getIDInfoListFromProp(int hisThreadNum){
+        return getIDInfoListFromProp(1,hisThreadNum);
+    }
+
+    public static List<IDInfo> getIDInfoListFromProp(int start,int end){
         List<IDInfo> idInfoList = new ArrayList<IDInfo>();
-        for(int i=1;i<=hisThreadNum;i++){
-            String threaNmae = "Thread-"+i;// 保存时的Key就是线程名称
-            String value = getValue(threaNmae);
+        for(int i=start;i<=end;i++){
+            String threadName = "Thread-"+i;// 保存时的Key就是线程名称
+            String value = getValue(threadName);
             if(value==null || value.trim().length()==0){
                 continue;
             }
             String[] idInfos = value.split("-");
             if(idInfos!=null && idInfos.length==3){
                 IDInfo idInfo = new IDInfo();
-                idInfo.setThreadName(threaNmae)
+                idInfo.setThreadName(threadName)
                         .setStartId(Long.parseLong(idInfos[0]))
                         .setCurrId(Long.parseLong(idInfos[1]))
                         .setEndId(Long.parseLong(idInfos[2]));
@@ -83,6 +136,58 @@ public class IDInfoUtil {
         }
         return idInfoList;
     }
+
+
+
+    /**
+     * 设置当前线程数
+     */
+    public  static boolean setHIS_THREAD_NUM(int HIS_THREAD_NUM){
+        return setValue(Constant.HIS_THREAD_NUM,HIS_THREAD_NUM+"");
+    }
+
+    /**
+     * 获取历史线程数
+     */
+    public  static int getHIS_THREAD_NUM(){
+        String value = getValue(Constant.HIS_THREAD_NUM);
+        if(value!=null && value.trim().length()>0){
+            return Integer.parseInt(value);
+        }
+        return 0;
+    }
+
+
+    /**
+     * 设置ID_POOL数据
+     */
+    public  static boolean setID_POOL(String id_pool){
+        return setValue(Constant.ID_POOL,id_pool);
+    }
+
+    /**
+     * 获取 ID_POOL
+     */
+    public static long[] getID_POOL(){
+        long[] ID_POOL = null;
+        String ID_POOL_STR = getValue(Constant.ID_POOL);
+        if(ID_POOL_STR!=null && ID_POOL_STR.trim().length()>0){
+            String[] id_pool = ID_POOL_STR.split("-");
+            ID_POOL = new long[id_pool.length];
+            for(int i=0;i<id_pool.length;i++){
+                ID_POOL[i] = Long.parseLong(id_pool[i]);
+            }
+        }
+        return ID_POOL;
+    }
+
+
+
+
+
+
+
+
 
 
 
@@ -105,16 +210,18 @@ public class IDInfoUtil {
         return value;
     }
 
-    public static void setValue(String key,String value){
+    public static boolean setValue(String key,String value){
         try{
             String path = PropUtil.class.getClassLoader().getResource(resourceFilePath).getPath();
             OutputStream out = new FileOutputStream(path,false);
             prop.setProperty(key,value);
             prop.store(out,key);
             out.close();
+            return true;
         }catch (Exception e){
             e.printStackTrace();
         }
+        return false;
     }
 
 

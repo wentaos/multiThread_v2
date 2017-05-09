@@ -64,7 +64,7 @@ public class DoCleanThread extends Thread {
             // 遍历ID
             for (long id=start;id<=end;id++){
                 // 处理图片、ID数据
-                 boolean cleanSHUN = cleanUtil.cleanPathHandler(id);
+                boolean cleanSHUN = cleanUtil.cleanPathHandler(id);
 
                 System.out.println(this.getName()+" 完成第" + id + "个数据!");
                 cleanUtil.wait(100);

@@ -7,6 +7,10 @@ public class Constant {
 	 */
 	public static final String THREAD_NUM = "THREAD_NUM";
 
+	/**
+	 * 程序运行时指定当前的线程数，在项目重启时需要根据线程数获取IDInfo信息
+	 */
+	public static final String HIS_THREAD_NUM = "HIS_THREAD_NUM";
 
 	/**
 	 * PHOTO_PATH：需要处理的文件目录
@@ -49,5 +53,11 @@ public class Constant {
 	 * 存放ID_INFO信息的目录
 	 */
 	public static final String ID_INFO_PATH = "ID_INFO_PATH";
+
+	/**
+	 * ID POOL：用于存储再次运行程序时无法分配的ID
+	 */
+	public static final String ID_POOL = "ID_POOL";
+
 
 }
