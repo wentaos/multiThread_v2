@@ -21,7 +21,10 @@ public class DoCleanUtil {
     public boolean cleanPathHandler(long curr_id) {
 
         Photo photo = null;
-        photo = photoService.getPhotoOne(curr_id);
+        synchronized (DoCleanUtil.class){
+            photo = photoService.getPhotoOne(curr_id);
+        }
+
         if (photo == null) {
             return true;// 直接忽略
         }
@@ -40,8 +43,10 @@ public class DoCleanUtil {
         }
 
         // 根据Photo的IMG_ID 去查询其他表中的 FUNC_CODE信息
-        String FUNC_CODE = photoService.getFuncCodeByPhoto(photo);
-
+        String FUNC_CODE = "";
+        synchronized (DoCleanUtil.class){
+            FUNC_CODE = photoService.getFuncCodeByPhoto(photo);
+        }
         // 获取到 FUNC_CODE
         if (FUNC_CODE != null && FUNC_CODE.length() > 0) {
             photo.setFuncCode(FUNC_CODE);
@@ -77,7 +82,9 @@ public class DoCleanUtil {
                 if(newImgUrl!=null){
                     photo.setImgUrl(newImgUrl);// 修改img_url
                 }
-                photoService.updatePhoto(photo);
+                synchronized (DoCleanUtil.class){
+                    photoService.updatePhoto(photo);
+                }
             }
         }
         return false;

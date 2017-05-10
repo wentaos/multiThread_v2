@@ -201,7 +201,7 @@ public class IDInfoUtil {
     public static String getValue(String key){
         String value = null;
         try{
-            InputStream in = PropUtil.class.getClassLoader().getResourceAsStream(resourceFilePath);
+            InputStream in = new FileInputStream(resourceFilePath);
             prop.load(in);
             value = prop.getProperty(key);
         }catch (Exception e){
@@ -212,8 +212,7 @@ public class IDInfoUtil {
 
     public static boolean setValue(String key,String value){
         try{
-            String path = PropUtil.class.getClassLoader().getResource(resourceFilePath).getPath();
-            OutputStream out = new FileOutputStream(path,false);
+            OutputStream out = new FileOutputStream(resourceFilePath,false);
             prop.setProperty(key,value);
             prop.store(out,key);
             out.close();

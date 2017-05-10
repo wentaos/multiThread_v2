@@ -103,7 +103,9 @@ public class PhotoDaoImpl implements PhotoDao {
             logger.info("遍历FUNC_CODE相关的表数组 START ...");
             for (String TABLE_NAME : tabNames) {
                 // 这里先用于测试
-                funcCode = selectFuncCodeFrom(TABLE_NAME, imgId);
+               synchronized (this.getClass()){
+                   funcCode = selectFuncCodeFrom(TABLE_NAME, imgId);
+               }
                 if (funcCode != null && funcCode.length() > 0) {
                     logger.info("获取到对应的 FUNC_CODE：FUNC_CODE=" + funcCode);
                     break;

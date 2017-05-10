@@ -45,6 +45,23 @@ public class IDPoolCleanThread extends Thread {
         this.id_pool = parseLongArr(totalList);
     }
 
+    public IDPoolCleanThread(String name,List<IDInfo> idInfoList,long[] id_pools) {
+        super(name);
+        List<Long> totalList = new ArrayList<Long>();
+        this.id_pool = new long[idInfoList.size()+id_pools.length];
+
+        for (int i=0;i<idInfoList.size();i++){
+            IDInfo info = idInfoList.get(i);
+            List<Long> list = parseChildList(info.getCurrId(),info.getEndId());
+            addAll(totalList,list);
+        }
+        this.id_pool = parseLongArr(totalList);
+        int len0 = this.id_pool.length;
+        for (int i=0;i<id_pools.length;i++){
+            this.id_pool[len0+i] = id_pools[i];
+        }
+    }
+
 
     public List<Long> parseChildList(Long start,Long end){
         List<Long> list = new ArrayList<Long>();
@@ -82,6 +99,8 @@ public class IDPoolCleanThread extends Thread {
         }
 
         int id_pool_save_point_num = 0;
+        // 初次运行先设置一次额数据
+        IDInfoUtil.setID_POOL(buildID_POOL_STR(0,id_pool));
         // 处理对应ID的数据
         for (int i=0;i<id_pool.length;i++){
             long ID = id_pool[i];
