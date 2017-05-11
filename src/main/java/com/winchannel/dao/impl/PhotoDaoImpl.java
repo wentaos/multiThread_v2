@@ -2,6 +2,7 @@ package com.winchannel.dao.impl;
 
 import com.winchannel.bean.Photo;
 import com.winchannel.dao.PhotoDao;
+import com.winchannel.funccode.FunccodeUtil;
 import com.winchannel.utils.DBUtil;
 import com.winchannel.utils.PropUtil;
 import org.apache.log4j.Logger;
@@ -14,6 +15,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 
 @Repository
@@ -90,7 +93,23 @@ public class PhotoDaoImpl implements PhotoDao {
 
     @Override
     public String getFuncCodeByImgId(String imgId) {
-    	
+
+        Map<String,Object> sqlMap = FunccodeUtil.getSqlList();
+        // 系统平台自身sql
+        String sfaSql = (String)sqlMap.get("sfaSql");
+        // 定制sql
+        List<String> speSqlList = (List<String>)sqlMap.get("speList");
+
+        String funcCode = "";
+
+
+
+
+
+
+
+
+
         String[] tabNames = null;
         if(PropUtil.IS_TEST()){
         	tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_ACVT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
@@ -98,7 +117,7 @@ public class PhotoDaoImpl implements PhotoDao {
         	tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_ACVT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
         }
         		
-        String funcCode = "";
+
         try {
             logger.info("遍历FUNC_CODE相关的表数组 START ...");
             for (String TABLE_NAME : tabNames) {
@@ -119,6 +138,27 @@ public class PhotoDaoImpl implements PhotoDao {
         return null;
     }
 
+
+
+    public String selectFuncCodeFromSql(String sql) {
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt;
+        String funcCode = "";
+        try {
+
+            pstmt = conn.prepareStatement(sql);
+
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                funcCode = rs.getString("FUNC_CODE");
+                logger.info("获取到FUNC_CODE = " + funcCode);
+            }
+            DBUtil.closeDbResources(conn, pstmt, rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return funcCode;
+    }
     
     public String selectFuncCodeFrom(String TABLE_NAME, String imgId) {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);

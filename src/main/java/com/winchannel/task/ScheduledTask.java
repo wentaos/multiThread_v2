@@ -39,7 +39,7 @@ public class ScheduledTask {
     // 获取上一次运行时最大ID:作为分配的起始点
     Long HIS_MAX_ID = IDInfoUtil.getHIS_MAX_ID(HIS_THREAD_NUM);
 
-    @Scheduled(cron = "0 38 10 * * ?")
+    @Scheduled(cron = "${RUN_CRON}")
     public void cleanFileDirTask() {
         logger.info("INFO");
 

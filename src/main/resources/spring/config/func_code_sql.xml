@@ -1,11 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<sqls>
-    <sql>
+<querys>
+
+    <!-- select_SFA 查询系统平台自身的-->
+    <select_SFA type="SRA">
+        SELECT imgUrl,funcCode AS FUNC_CODE
+            FROM SFA_PHOTO
+            WHERE imgId=${imgId} AND date=${date}
+    </select_SFA>
 
 
-    </sql>
+    <!-- select_SPE 查询SPE定制的 * N-->
+    <select_SPE type="SPE">
 
-</sqls>
+
+    </select_SPE>
+
+    <select_SPE type="SPE">
+
+
+    </select_SPE>
+
+
+</querys>
 
 
 

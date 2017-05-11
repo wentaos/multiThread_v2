@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<querys commomhead="SELECT imgUrl,funcCode AS FUNC_CODE">
+
+    <SELECT>
+        <table>SRA_PHOTO</table>
+        <condition>imgUrl,date</condition>
+    </SELECT>
+
+    
+    
+
+</querys>
+
+
+
+
+
