@@ -8,6 +8,7 @@ import com.winchannel.service.IDInfoService;
 import com.winchannel.service.PhotoService;
 import com.winchannel.service.impl.IDInfoServiceImpl;
 import com.winchannel.service.impl.PhotoServiceImpl;
+import com.winchannel.task.ScheduledTask;
 import com.winchannel.utils.DoCleanUtil;
 import com.winchannel.utils.IDInfoUtil;
 import com.winchannel.utils.PropUtil;
@@ -68,13 +69,15 @@ public class DoCleanThread extends Thread {
             this.idInfo.setThreadName(this.getName());
             long start = this.idInfo.getCurrId();
             long end = this.idInfo.getEndId();
+            // 执行前记录一次
+            IDInfoUtil.saveIDInfoPoint(idInfo);
             // 遍历ID
             for (long id=start;id<=end;id++){
                 // 处理图片、ID数据
                 boolean cleanSHUN = cleanUtil.cleanPathHandler(id);
                 loop_count++;
                 System.out.println(this.getName()+" 完成第" + id + "个数据!");
-                cleanUtil.wait(100);
+                // cleanUtil.wait(100);
 
                 // 检查LOOP次数 是否满100*N，是则update ID信息
                 if(loop_count==PropUtil.LOOP_SAVE_COUNT()){
@@ -97,10 +100,11 @@ public class DoCleanThread extends Thread {
 
             if (this.isComplete){
                 // 再次分配ID资源
-                synchronized (this.getClass()){
+                synchronized (ScheduledTask.class){
                     Memory.MAX_ID = photoService.getPhotoMaxId();
+                    DistResource.distId(this.idInfo);// 内部设置 CURR_MAX_ID
+                    IDInfoUtil.saveIDInfoPoint(idInfo);
                 }
-                DistResource.distId(this.idInfo);// 内部设置 CURR_MAX_ID
             }
 
         }

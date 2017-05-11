@@ -36,28 +36,28 @@ public class DoCleanUtil {
             containsDot2B = true;
         }
 
-        // 判断该Photo是否已经是一个符合规则的路径
-        if (CleanFileTool.isTruePath2(photo)) {
-            // 如果是符合规则的路径，就继续下一个Photo
-            return true;
-        }
-
         // 根据Photo的IMG_ID 去查询其他表中的 FUNC_CODE信息
         String FUNC_CODE = "";
         synchronized (DoCleanUtil.class){
             FUNC_CODE = photoService.getFuncCodeByPhoto(photo);
         }
+
         // 获取到 FUNC_CODE
         if (FUNC_CODE != null && FUNC_CODE.length() > 0) {
+
+            // 判断该Photo是否已经是一个符合规则的路径
             photo.setFuncCode(FUNC_CODE);
+            if (CleanFileTool.isTruePath2(photo)) {
+                // 如果是符合规则的路径，就继续下一个Photo
+                return true;
+            }
 
             // clean FUNC_CODE path 得到 D:/Photo_Test/photos/FUNC_CODE 这层目录
             @SuppressWarnings("unused")
             String funcCodeFullPath = CleanFileTool.cleanFuncCodePath(FUNC_CODE);
 
             // 处理日期目录  得到 D:/Photo_Test/photos/FUNC_CODE/2017-01-23 这层目录
-            @SuppressWarnings("unused")
-            String date_OR_F0A_1x2x3x = CleanFileTool.cleanDatePath(FUNC_CODE, photo.getImgUrl());
+            String date = CleanFileTool.cleanDatePath(FUNC_CODE, photo.getImgUrl());
 
             // 开始move文件
             // 在原绝对路径基础上加上FUNC_CODE目录
@@ -67,16 +67,16 @@ public class DoCleanUtil {
             boolean moveFileOk = false;
 
             if (containsDot2B) {// 有绝对路径数据
-                newAbsPath = CleanFileTool.getNewAbsPath(absolutePath, FUNC_CODE,date_OR_F0A_1x2x3x);
+                newAbsPath = CleanFileTool.getNewAbsPath(absolutePath, FUNC_CODE,date);
                 moveFileOk = CleanFileTool.movePhoto(absolutePath, newAbsPath);
             } else {
-                newAbsPath = CleanFileTool.getNewAbsPath(new String[]{imgUrl, FUNC_CODE,date_OR_F0A_1x2x3x});
+                newAbsPath = CleanFileTool.getNewAbsPath(new String[]{imgUrl, FUNC_CODE,date});
                 moveFileOk = CleanFileTool.movePhoto(new String[]{imgUrl, newAbsPath});
             }
 
             if (moveFileOk) {
                 // 更新数据库:需要更新photo的 absolute_path 和 img_url
-                String newImgUrl = CleanFileTool.getNewImgUrl(photo.getImgUrl(), FUNC_CODE,date_OR_F0A_1x2x3x);
+                String newImgUrl = CleanFileTool.getNewImgUrl(photo.getImgUrl(), FUNC_CODE,date);
                 // TODO ？对于老数据绝对路径需不需要保存
                 photo.setImgAbsPath(newAbsPath);// 修改绝对路径
                 if(newImgUrl!=null){
@@ -86,6 +86,7 @@ public class DoCleanUtil {
                     photoService.updatePhoto(photo);
                 }
             }
+            return true;
         }
         return false;
     }

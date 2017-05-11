@@ -3,16 +3,12 @@ package com.winchannel.task;
 import com.winchannel.bean.IDInfo;
 import com.winchannel.data.DistResource;
 import com.winchannel.data.Memory;
-import com.winchannel.service.IDInfoService;
 import com.winchannel.service.PhotoService;
-import com.winchannel.service.impl.IDInfoServiceImpl;
-import com.winchannel.service.impl.PhotoServiceImpl;
 import com.winchannel.thread.DoCleanThread;
 import com.winchannel.thread.IDPoolCleanThread;
 import com.winchannel.utils.IDInfoUtil;
 import com.winchannel.utils.LogUtil;
 import com.winchannel.utils.PropUtil;
-import com.winchannel.utils.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -43,7 +39,7 @@ public class ScheduledTask {
     // 获取上一次运行时最大ID:作为分配的起始点
     Long HIS_MAX_ID = IDInfoUtil.getHIS_MAX_ID(HIS_THREAD_NUM);
 
-    @Scheduled(cron = "0 4 19 * * ?")
+    @Scheduled(cron = "0 38 10 * * ?")
     public void cleanFileDirTask() {
         logger.info("INFO");
 
@@ -72,13 +68,13 @@ public class ScheduledTask {
                     // 这里：已经分配完了历史的ID信息，接下来根据历史的最大ID进行最新的分配
                     Memory.DIST_MAX_ID = HIS_MAX_ID;// 设置当前最大ID
                     // 分配之前查询MAX_ID
-                    synchronized (this.getClass()){
+                    synchronized (ScheduledTask.class){
                         long MAX_ID = photoService.getPhotoMaxId();
                         Memory.MAX_ID = MAX_ID;
+                        DistResource.distId(idInfo);
                     }
-                    DistResource.distId(idInfo);
                 }
-                doCleanThread.setIdInfo(idInfo);// 为线程设置ID组
+                doCleanThread.setIdInfo(idInfo);// 为线程设置ID组daz
                 doCleanThread.start();
             }
 
@@ -93,7 +89,7 @@ public class ScheduledTask {
 
         } else if(HIS_THREAD_NUM==0){// 说明是第一次运行，没有历史线程信息
             // 分配之前查询MAX_ID
-            synchronized (this.getClass()){
+            synchronized (ScheduledTask.class){
                 long MAX_ID = photoService.getPhotoMaxId();
                 Memory.MAX_ID = MAX_ID;
             }

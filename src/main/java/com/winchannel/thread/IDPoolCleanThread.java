@@ -2,11 +2,8 @@ package com.winchannel.thread;
 
 
 import com.winchannel.bean.IDInfo;
-import com.winchannel.service.IDInfoService;
-import com.winchannel.service.impl.IDInfoServiceImpl;
 import com.winchannel.utils.DoCleanUtil;
 import com.winchannel.utils.IDInfoUtil;
-import com.winchannel.utils.PropUtil;
 import com.winchannel.utils.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -109,24 +106,32 @@ public class IDPoolCleanThread extends Thread {
                 id_pool_save_point_num++;
             }
             cleanUtil.wait(100);
-            if(id_pool_save_point_num % 50==0){
+            if(id_pool_save_point_num % 10==0){
                 IDInfoUtil.setID_POOL(buildID_POOL_STR(i+1,id_pool));
             }
         }
-
+        // 完成之后清空
+        IDInfoUtil.setID_POOL("");
     }
 
 
     public String buildID_POOL_STR(int startIndex,long[] id_pool){
         StringBuffer id_pool_str = new StringBuffer();
         for (int index=startIndex;index<id_pool.length-1;index++){
-            id_pool_str.append(id_pool).append("-");
+            id_pool_str.append(id_pool[index]).append("-");
         }
         id_pool_str.append(id_pool[id_pool.length-1]);
         return id_pool_str.toString();
     }
 
-
+    public String buildID_POOL_STR(long[] id_pool){
+        StringBuffer id_pool_str = new StringBuffer();
+        for (int index=0;index<id_pool.length-1;index++){
+            id_pool_str.append(id_pool[index]).append("-");
+        }
+        id_pool_str.append(id_pool[id_pool.length-1]);
+        return id_pool_str.toString();
+    }
 
 
 

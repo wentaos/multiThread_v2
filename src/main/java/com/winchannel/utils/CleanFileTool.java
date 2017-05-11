@@ -64,7 +64,7 @@ public class CleanFileTool {
 
     // 通用版本：对于老数据，没有ABSOLUTE_PATH 数据
     public static boolean isTruePath2(Photo photo) {
-
+        String func_code = photo.getFuncCode();
         // 2012年的数据没有ABSOLUTE_PATH数据,并且没有dot2B 这种分隔符
         String imgUrl = photo.getImgUrl();
         // 数据格式：.../photos/2012-01-01/xxx.jpg 	/media/Ddot1Adot2BPhoto_Testdot2Bphotosdot2B2017-01-01dot2B8.jpg
@@ -76,9 +76,9 @@ public class CleanFileTool {
 
         // 如果
         if(imgUrl.contains("dot2B")){// 新型数据
-            return isTurePath("dot2B",imgUrl);
+            return isTurePath("dot2B",imgUrl,func_code);
         }else{
-            return isTurePath("/",imgUrl);
+            return isTurePath("/",imgUrl,func_code);
         }
 
     }
@@ -87,7 +87,7 @@ public class CleanFileTool {
 
 
 
-    public static boolean isTurePath(String flag,String imgUrl){
+    public static boolean isTurePath(String flag,String imgUrl,String trueFuncCode){
         // 为空直接忽略掉
         if(imgUrl==null || imgUrl.trim().length()==0){
             return true;
@@ -97,9 +97,20 @@ public class CleanFileTool {
 
         String[] arr = afterStr.split(flag);
         int flag_num = arr.length-1;// afterStr中 dot2B 的个数
-        if(flag_num>=2){
-            return true;
-        }else if(flag_num==1){// afterStr 说明剩下的格式是: date/xxx.jpg 或/者 F0sdsadas_dsdafasddfsad/xxx.jpg
+        if(flag_num>=2){// 可能有错误路径 F0sdsadas_dsdafasddfsad/date/xxx.jpg
+            String date = getDatePathFromUrl(afterStr);
+            if(date!=null && date.trim().length()>0) {
+                String funccode_id = afterStr.split(flag + date)[0];
+                if(trueFuncCode.toLowerCase().trim().equals(
+                        funccode_id.toLowerCase().trim()
+                )){// 日期前面的目录 不是错误的目录，和正确的FUNC_CODE一样
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+
+        }else if(flag_num==1){// afterStr 说明剩下的格式是: date/xxx.jpg
 
             String F0A_1x2x3x = afterStr.split(flag)[0];
             // 先得到日期：如果防寒日期，则不是正确的路径格式
@@ -118,12 +129,6 @@ public class CleanFileTool {
 
 
 
-
-
-    @Test
-    public void sadsad(){
-        isTurePath("/","photos/F0sad_sadasf4rr4t45/xxx.jpg");
-    }
 
 
 
@@ -145,13 +150,14 @@ public class CleanFileTool {
     public static String cleanDatePath(String funcCodePath, String imgUrl) {
         String PHOTO_PATH = PropUtil.PHOTO_PATH();
         String code_date_path = "";
-        String date_OR_F0A_1x2x3x = "";
+        String date = "";
         if(imgUrl!=null && imgUrl.trim().length()>0){
-            date_OR_F0A_1x2x3x = getDatePathFromUrl(imgUrl);
-            if(date_OR_F0A_1x2x3x!=null){
-                code_date_path=funcCodePath+ File.separator+date_OR_F0A_1x2x3x;
+            date = getDatePathFromUrl(imgUrl);
+            if(date!=null){
+                code_date_path=funcCodePath+ File.separator+date;
                 code_date_path = createPath(PHOTO_PATH+ File.separator +code_date_path);
-            }else{// 如果是意外情况的目录，没有date目录
+            }
+            /*else{// 如果是意外情况的目录，没有date目录
                 if(imgUrl.contains("dot2B")){
                     String afterStr = imgUrl.split("photos"+"dot2B")[1];
                     date_OR_F0A_1x2x3x = afterStr.split("dot2B")[0];
@@ -163,9 +169,9 @@ public class CleanFileTool {
                     code_date_path=funcCodePath+ File.separator+date_OR_F0A_1x2x3x;
                     code_date_path = createPath(PHOTO_PATH+ File.separator +code_date_path);
                 }
-            }
+            }*/
         }
-        return date_OR_F0A_1x2x3x;
+        return date;
     }
 
 
@@ -199,11 +205,11 @@ public class CleanFileTool {
      * 组装新的file 绝对路径
      * 加上 FUNC_CODE_PATH
      */
-    public static String getNewAbsPath(String absolutePath, String funcCodePath,String date_OR_F0A_1x2x3x) {
-        String headPath = getHeadPath(absolutePath);
+    public static String getNewAbsPath(String absolutePath, String funcCodePath,String date) {
+        String headPath = PropUtil.PHOTO_PATH();// getHeadPath(absolutePath);
 //        String datePath = getDatePathFromUrl(absolutePath);
         String fileNamePath = getFileNamePath(absolutePath);
-        String newAbsPath = headPath + "/" + funcCodePath + "/" + date_OR_F0A_1x2x3x + "/" + fileNamePath;
+        String newAbsPath = headPath + funcCodePath + "/" + date + "/" + fileNamePath;
         return newAbsPath;
     }
 
@@ -211,26 +217,35 @@ public class CleanFileTool {
         String headPath = PropUtil.PHOTO_PATH();
 //        String datePath = getDatePathFromUrl(paths[0]);
         String fileNamePath = getFileNamePath(paths[0]);
-        String newAbsPath = headPath + "/" + paths[1] + "/" + paths[2] + "/" + fileNamePath;
+        String newAbsPath = headPath + paths[1] + "/" + paths[2] + "/" + fileNamePath;
         return newAbsPath;
     }
 
     /**
      * 得到新的 IMG_URL
-     * IMG_URL: /media/Ddot1Adot2BAPPdot2BSFA_demodot2Bwebappsdot2BROOTdot2Bphotosdot2B2016-07-28dot2Bb5f6ebf8-eb7f-44ef-bd5d-8843bcd74706dot4Djpg.jpg
+     * IMG_URL: /media/Ddot1Adot2BAPPdot2BSFA_demodot2Bwebappsdot2BROOTdot2B photosdot2B  这里可能有错误目录dot2B  2016-07-28dot2Bb5f6ebf8-eb7f-44ef-bd5d-8843bcd74706dot4Djpg.jpg
      * 老数据是 photos/2017-01-01/xxx.jpg
      */
-    public static String getNewImgUrl(String oldImgUrl, String funcCodePath,String date_OR_F0A_1x2x3x) {
+    public static String getNewImgUrl(String oldImgUrl, String funcCodePath,String date) {
         String newImgUrl = null;
         if (oldImgUrl != null) {
 //        	String date = getDatePathFromUrl(oldImgUrl);
             newImgUrl = oldImgUrl;// 保证原来的数据没问题
-            if (date_OR_F0A_1x2x3x!=null) {
+
+            if (date!=null) {
                 // 替换
+                String flag = "dot2B";
                 if(oldImgUrl.contains("dot2B")){
-                    newImgUrl = oldImgUrl.replace(date_OR_F0A_1x2x3x, funcCodePath + "dot2B" + date_OR_F0A_1x2x3x);
+                    flag = "dot2B";
                 }else{// 就是 / 分割
-                    newImgUrl = oldImgUrl.replace(date_OR_F0A_1x2x3x, funcCodePath + "/" + date_OR_F0A_1x2x3x);
+                    flag = "/";
+                }
+                String var0 = oldImgUrl.split("photos"+flag)[1];
+                if(var0!=null && var0.trim().length()>0){
+                    String var1 = var0.split(date)[0];// 得到的可能是错误目录
+                    if(var1!=null && var1.trim().length()>0){// 说明存在错误目录
+                        newImgUrl = oldImgUrl.replace(var1+date, funcCodePath + flag + date);// 整体替换
+                    }
                 }
 
             }

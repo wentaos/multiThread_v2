@@ -1,5 +1,6 @@
 package com.winchannel.utils;
 
+import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,6 @@ public class LogUtil {
     public void error(String error) {
         logger.error(this.clazz.getName()+"-"+error);
     }
-
 
 
 
