@@ -3,7 +3,7 @@ package com.winchannel.bean;
 import java.io.Serializable;
 
 /**
- * Created by Wator on 2017/5/7.
+ * 封装处理的ID和线程信息
  */
 public class IDInfo implements Serializable{
 

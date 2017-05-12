@@ -1,6 +1,7 @@
 package com.winchannel.utils;
 
 import com.winchannel.bean.IDInfo;
+import com.winchannel.cleanUtil.PropUtil;
 import com.winchannel.data.Constant;
 
 import java.io.*;

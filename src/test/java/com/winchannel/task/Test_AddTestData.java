@@ -1,9 +1,8 @@
 package com.winchannel.task;
 
-import com.winchannel.bean.Photo;
 import com.winchannel.dao.PhotoDao;
 import com.winchannel.utils.DateUtil;
-import com.winchannel.utils.PropUtil;
+import com.winchannel.cleanUtil.PropUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -11,7 +10,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
 import java.io.*;
-import java.util.Random;
 
 @SuppressWarnings("all")
 @RunWith(SpringJUnit4ClassRunner.class)  

@@ -9,8 +9,7 @@ import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
-import org.junit.Test;
+import com.winchannel.cleanUtil.PropUtil;
 
 import com.winchannel.bean.Photo;
 import org.slf4j.LoggerFactory;

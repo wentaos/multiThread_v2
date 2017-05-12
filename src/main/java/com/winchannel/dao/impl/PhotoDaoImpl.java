@@ -2,21 +2,17 @@ package com.winchannel.dao.impl;
 
 import com.winchannel.bean.Photo;
 import com.winchannel.dao.PhotoDao;
-import com.winchannel.funccode.FunccodeUtil;
+import com.winchannel.funccode.FunccodeXmlUtil;
 import com.winchannel.utils.DBUtil;
-import com.winchannel.utils.PropUtil;
+import com.winchannel.cleanUtil.PropUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 
 @Repository
@@ -33,6 +29,238 @@ public class PhotoDaoImpl implements PhotoDao {
     private String passWord;
 
 
+
+
+    /*******************************************新版本增加功能********************************************/
+
+
+
+    /**
+     * 从baseQuery查询中得到结果集最大ID
+     */
+    @Override
+    public Long selectMaxIdByBaseQuery() {
+        // 代替查询全部Photo数据的sql
+        String baseQuerySql = FunccodeXmlUtil.getBaseQuerySql();
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt = null;
+        Long maxId = null;
+        try {
+            pstmt = conn.prepareStatement(baseQuerySql);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                maxId = rs.getLong("ID");
+            }
+            DBUtil.closeDbResources(conn, pstmt, rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return maxId;
+    }
+
+
+    @Override
+    public List<Long> selectNextIdPoolFromBaseQueryByEndId(Long endId) {
+        String baseQuerySql = FunccodeXmlUtil.getBaseQuerySql();
+
+        // 组装 baseQuerySql eg: select top 100 p.ID from (baseQuerySql);
+        baseQuerySql = "SELECT TOP "+PropUtil.REDUCE_ID_NUM()+" p.ID FROM "
+                +"("+baseQuerySql+") p WHERE p.ID>"+endId;
+
+        logger.info("Next ID_POOL: baseQuerySql===>>>"+baseQuerySql);
+
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt = null;
+        List<Long> ID_POOL = null;
+        try {
+            ID_POOL = new ArrayList<Long>();
+            pstmt = conn.prepareStatement(baseQuerySql);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                Long id = rs.getLong("ID");
+                ID_POOL.add(id);
+            }
+            DBUtil.closeDbResources(conn, pstmt, rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return ID_POOL;
+        }
+        logger.info("Next ID_POOL: SIZE===>>>"+ID_POOL.size());
+        return ID_POOL;
+    }
+
+
+    @Override
+    public List<Photo> selectPhotoListByBaseQuery(){
+        // 代替查询全部Photo数据的sql
+        String baseQuerySql = FunccodeXmlUtil.getBaseQuerySql();
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt;
+        List<Photo> photoList = new ArrayList<Photo>();
+        try {
+            pstmt = conn.prepareStatement(baseQuerySql);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                Photo photo = new Photo();
+                photo.setId(rs.getLong("ID"));
+                photo.setImgId(rs.getString("IMG_ID"));
+                photo.setImgUrl(rs.getString("IMG_URL"));
+                photo.setImgAbsPath(rs.getString("ABSOLUTE_PATH"));
+                photoList.add(photo);
+            }
+            DBUtil.closeDbResources(conn, pstmt, rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return photoList;
+    }
+
+
+
+
+    /**
+     * 目前最新使用的查询FUNC_CODE的方法： 从XML配置的sql查询中获取
+     * @param photo
+     * @return
+     */
+    @Override
+    public String getFunCodeByPhoto(Photo photo){
+        Map<String,Object> sqlMap = FunccodeXmlUtil.getSqlList();
+        // 系统平台自身sql
+        String sfaSql = (String)sqlMap.get("sfaSql");
+        // 定制sql
+        List<String> speSqlList = (List<String>)sqlMap.get("speList");
+
+        String funcCode = null;
+
+        // 先查询系统平台自身的
+        funcCode = selectFuncCodeFromRPT(sfaSql,photo.getBizDate(),photo.getId());
+        if(funcCode !=null && funcCode.trim().length()>0){// 说明获取到了
+            return funcCode;
+        }
+
+        // 继续查询 其他业务表
+        if(speSqlList!=null && speSqlList.size()>0){
+            for (String sql:speSqlList){
+                funcCode = getFuncCodeFromOneBiz(sql, photo.getBizDate(), photo.getImgId());
+                if(funcCode !=null && funcCode.trim().length()>0){// 说明获取到了
+                    return funcCode;// 获取到直接返回
+                }
+            }
+        }
+
+        return funcCode;
+    }
+
+
+
+    /**
+     * 系统平台自身表 RPT_PHOTO 查询
+     * @param sql
+     * @param bizDate
+     * @param photoId
+     * @return
+     */
+    //    select imgId AS PHOTO_ID,bizDate AS BIZ_DATE,funcCode AS FUNC_CODE,imgUrl AS IMG_URL from RPT_PHOTO WHERE bizDate='${bizDate}' AND imgId=${imgId}
+    public String selectFuncCodeFromRPT(String sql,String bizDate,long photoId) {
+        String fixSql = "SELECT funcCode AS FUNC_CODE FROM RPT_PHOTO WHERE bizDate='${bizDate}' AND imgId=${photoId}";
+        sql = fixSql;// 目前sql是固定的，不实用配置文件配置，后续扩展的话再去掉该行赋值
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        Statement stmt = null;
+        ResultSet rs = null;
+        String funcCode = null;
+        try {
+            if(sql!=null && sql.trim().length()>0){
+                if(sql.contains("${photoId}")){
+                    sql.replace("${photoId}",photoId+"");
+                }
+                if(sql.contains("${bizDate}")){
+                    sql.replace("${bizDate}",bizDate);
+                }
+                stmt = conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                if (rs.next()) {
+                    funcCode = rs.getString("FUNC_CODE");
+                    logger.info("获取到FUNC_CODE = " + funcCode);
+                }
+            }
+            DBUtil.closeDbResources(conn, stmt, rs);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return funcCode;
+    }
+
+
+
+
+    @Override
+    public String getFuncCodeFromOneBiz(String sql,String bizDate,String imgId) {
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        Statement stmt = null;
+        ResultSet rs = null;
+        String funcCode = null;
+        try {
+            if(sql!=null && sql.trim().length()>0){
+                if(sql.contains("${imgId}")){
+                    sql.replace("${imgId}",imgId+"");
+                }
+                if(sql.contains("${bizDate}")){
+                    sql.replace("${bizDate}",bizDate);
+                }
+                stmt = conn.createStatement();
+                rs = stmt.executeQuery(sql);
+                if (rs.next()) {
+                    funcCode = rs.getString("FUNC_CODE");
+                    logger.info("获取到FUNC_CODE = " + funcCode);
+                }
+            }
+            DBUtil.closeDbResources(conn, stmt, rs);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return funcCode;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /****************************原有功能**********************************************/
+
+
+
+
+
+
+    @Override
     public Photo selectPhotoOne(long id) {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
 
@@ -60,6 +288,12 @@ public class PhotoDaoImpl implements PhotoDao {
         return photo;
     }
 
+
+    /**
+     * 这是查询全部的
+     * @return
+     */
+    @Override
     public List<Photo> selectPhotoList() {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
@@ -91,39 +325,28 @@ public class PhotoDaoImpl implements PhotoDao {
         return photoList;
     }
 
+
+
+
+
+
+    @Deprecated
     @Override
     public String getFuncCodeByImgId(String imgId) {
-
-        Map<String,Object> sqlMap = FunccodeUtil.getSqlList();
-        // 系统平台自身sql
-        String sfaSql = (String)sqlMap.get("sfaSql");
-        // 定制sql
-        List<String> speSqlList = (List<String>)sqlMap.get("speList");
-
-        String funcCode = "";
-
-
-
-
-
-
-
-
-
         String[] tabNames = null;
+        String funcCode = null;
         if(PropUtil.IS_TEST()){
         	tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_ACVT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
         } else {
         	tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_ACVT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
         }
         		
-
         try {
             logger.info("遍历FUNC_CODE相关的表数组 START ...");
             for (String TABLE_NAME : tabNames) {
                 // 这里先用于测试
                synchronized (this.getClass()){
-                   funcCode = selectFuncCodeFrom(TABLE_NAME, imgId);
+                   funcCode = selectFuncCodeByImgId(TABLE_NAME, imgId);
                }
                 if (funcCode != null && funcCode.length() > 0) {
                     logger.info("获取到对应的 FUNC_CODE：FUNC_CODE=" + funcCode);
@@ -139,28 +362,14 @@ public class PhotoDaoImpl implements PhotoDao {
     }
 
 
-
-    public String selectFuncCodeFromSql(String sql) {
-        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
-        PreparedStatement pstmt;
-        String funcCode = "";
-        try {
-
-            pstmt = conn.prepareStatement(sql);
-
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                funcCode = rs.getString("FUNC_CODE");
-                logger.info("获取到FUNC_CODE = " + funcCode);
-            }
-            DBUtil.closeDbResources(conn, pstmt, rs);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return funcCode;
-    }
-    
-    public String selectFuncCodeFrom(String TABLE_NAME, String imgId) {
+    /**
+     * 这个是旧版本 根据PHOTO表中的IMG_ID字段 查询某几张表的中的FUNC_CODE数据的方法，应该被舍弃
+     * @param TABLE_NAME
+     * @param imgId
+     * @return
+     */
+    @Deprecated
+    public String selectFuncCodeByImgId(String TABLE_NAME, String imgId) {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         String funcCode = "";
@@ -259,6 +468,12 @@ public class PhotoDaoImpl implements PhotoDao {
     }
 
 
+
+
+
+
+
+
 	@Override
 	public long selectPhotoMinId() {
 		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
@@ -289,6 +504,20 @@ public class PhotoDaoImpl implements PhotoDao {
 	}
 
 
+
+
+
+
+
+
+
+
+
+    /*********************下面的是测试方法*********************************/
+
+    /**
+     * 测试使用
+     */
 	@Override
 	public void updatePhotoImgId(long ID) {
 		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
@@ -333,7 +562,7 @@ public class PhotoDaoImpl implements PhotoDao {
 	 * 用于测试
 	 */
 	@Override
-	public void inserFuncCodeTable(String funcCodeTable,Photo photo){
+	public void insertFuncCodeTable(String funcCodeTable,Photo photo){
 		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         try{

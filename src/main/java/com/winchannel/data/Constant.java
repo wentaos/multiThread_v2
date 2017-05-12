@@ -40,6 +40,7 @@ public class Constant {
 	/**
 	 * 数据库类型
 	 */
+	public static final String ORACLE = "ORACLE";
 	public static final String SQLSERVER = "SQLSERVER";
 	public static final String MYSQL = "MYSQL";
 	public static final String DB_TYPE="DB_TYPE";
@@ -59,5 +60,14 @@ public class Constant {
 	 */
 	public static final String ID_POOL = "ID_POOL";
 
+	/**
+	 * 是否使用 处理一部分 FUNC_CODE 的功能
+	 */
+	public static final String IS_FUNC_CODE_PART = "IS_FUNC_CODE_PART";
+
+	/**
+	 * 需要处理的部分 FUNC_CODE
+	 */
+	public static final String FUNC_CODE_LIST = "FUNC_CODE_LIST";
 
 }

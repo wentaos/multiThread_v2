@@ -7,10 +7,32 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface PhotoService {
+
+    /****************新版本功能********************/
+    String getFuncCodeByXml(Photo photo);
+
+    List<Photo> getPhotoListByBaseQuery();// 获取baseQuery中所有的Photo数据
+
+    Long getMaxIdByBaseQuery();
+
+    List<Long> getNextIdPoolFromBaseQueryByEndId(Long endId);
+
+
+
+
+
+
+
+
+    /****************原功能********************/
+
+
+
     Photo getPhotoOne(long id);
 
     Photo getFirstPhotoOne();
 
+    @Deprecated
     String getFuncCodeByPhoto(Photo photo);
 
     boolean updatePhoto(Photo photo);
@@ -20,4 +42,8 @@ public interface PhotoService {
     long getPhotoMaxId();
 
     void updatePhotoImgId(long ID);
+
+
+
+
 }

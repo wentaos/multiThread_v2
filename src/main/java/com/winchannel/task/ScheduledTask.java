@@ -8,12 +8,11 @@ import com.winchannel.thread.DoCleanThread;
 import com.winchannel.thread.IDPoolCleanThread;
 import com.winchannel.utils.IDInfoUtil;
 import com.winchannel.utils.LogUtil;
-import com.winchannel.utils.PropUtil;
+import com.winchannel.cleanUtil.PropUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
 import java.util.List;
 
 @Component
@@ -24,7 +23,7 @@ public class ScheduledTask {
     @Autowired
     private PhotoService photoService;
 
-    Calendar calendar = Calendar.getInstance();
+//    Calendar calendar = Calendar.getInstance();
 
     // 线程数:默认10
     int THREAD_NUM = PropUtil.THREAD_NUM();

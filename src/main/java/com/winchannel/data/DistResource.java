@@ -1,7 +1,7 @@
 package com.winchannel.data;
 
 import com.winchannel.bean.IDInfo;
-import com.winchannel.utils.PropUtil;
+import com.winchannel.cleanUtil.PropUtil;
 
 
 public class DistResource {

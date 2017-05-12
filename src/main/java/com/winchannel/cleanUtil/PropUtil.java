@@ -1,4 +1,4 @@
-package com.winchannel.utils;
+package com.winchannel.cleanUtil;
 
 import com.winchannel.data.Constant;
 
@@ -137,7 +137,7 @@ public class PropUtil {
      */
     public static boolean IS_MYSQL(){
         try{
-            String DB_TYPE = getValue(Constant.DB_TYPE);
+            String DB_TYPE = getValue(Constant.DB_TYPE).trim();
             return Constant.MYSQL.equals(DB_TYPE)? true:false;
         }catch (Exception e){
             e.printStackTrace();
@@ -150,8 +150,21 @@ public class PropUtil {
      */
     public static boolean IS_SQLSERVER(){
         try{
-            String DB_TYPE = getValue(Constant.DB_TYPE);
+            String DB_TYPE = getValue(Constant.DB_TYPE).trim();
             return Constant.SQLSERVER.equals(DB_TYPE)? true:false;
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * ORACLE
+     */
+    public static boolean IS_ORACLE(){
+        try{
+            String DB_TYPE = getValue(Constant.DB_TYPE).trim();
+            return Constant.ORACLE.equals(DB_TYPE)? true:false;
         }catch (Exception e){
             e.printStackTrace();
             return false;
@@ -174,10 +187,41 @@ public class PropUtil {
     }
 
 
+    /**
+     * IS_FUNC_CODE_PART
+     * 是否处理一部分 FUNC_CODE
+     */
+    public static boolean IS_FUNC_CODE_PART(){
+        try{
+            String IS_FUNC_CODE_PART = getValue(Constant.IS_FUNC_CODE_PART);
+            if(IS_FUNC_CODE_PART!=null && IS_FUNC_CODE_PART.trim().length()>0){
+                return Boolean.parseBoolean(IS_FUNC_CODE_PART.trim().toLowerCase());
+            }else {
+                return false;
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-
-
-
+    /**
+     * IS_FUNC_CODE_PART
+     * 是否处理一部分 FUNC_CODE
+     */
+    public static String[] FUNC_CODE_LIST(){
+        String[] funcodes = null;
+        try{
+            String FUNC_CODE_LIST = getValue(Constant.FUNC_CODE_LIST);
+            if(FUNC_CODE_LIST!=null && FUNC_CODE_LIST.trim().length()>0){
+                funcodes = FUNC_CODE_LIST.trim().split(",");
+            }
+            return funcodes;
+        }catch (Exception e){
+            e.printStackTrace();
+            return funcodes;
+        }
+    }
 
 
 

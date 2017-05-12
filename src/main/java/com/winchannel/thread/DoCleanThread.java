@@ -11,7 +11,7 @@ import com.winchannel.service.impl.PhotoServiceImpl;
 import com.winchannel.task.ScheduledTask;
 import com.winchannel.utils.DoCleanUtil;
 import com.winchannel.utils.IDInfoUtil;
-import com.winchannel.utils.PropUtil;
+import com.winchannel.cleanUtil.PropUtil;
 import com.winchannel.utils.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;

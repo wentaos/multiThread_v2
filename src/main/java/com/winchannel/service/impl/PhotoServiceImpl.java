@@ -16,6 +16,62 @@ public class PhotoServiceImpl implements PhotoService{
     @Autowired
     private PhotoDao photoDao;
 
+
+    // selectNextIdPoolFromBaseQueryByEndId
+    /********************新版本增加功能**************************/
+    @Override
+    public List<Photo> getPhotoListByBaseQuery() {
+        return photoDao.selectPhotoListByBaseQuery();
+    }
+
+    @Override
+    public Long getMaxIdByBaseQuery() {
+        return photoDao.selectMaxIdByBaseQuery();
+    }
+
+    /**
+     * 最新使用的查询FUNC_CODE方法
+     * @param photo
+     * @return
+     */
+    @Override
+    public String getFuncCodeByXml(Photo photo){
+        String fc = null;
+        if(photo!=null){
+            fc = photoDao.getFunCodeByPhoto(photo);
+        }
+        return fc;
+    }
+
+
+    /**
+     * 获取下一ID_POOL 数据
+     * @param endId
+     * @return
+     */
+    @Override
+    public List<Long> getNextIdPoolFromBaseQueryByEndId(Long endId) {
+        return photoDao.selectNextIdPoolFromBaseQueryByEndId(endId);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    /********************原有功能**************************/
+
     @Override
     public Photo getPhotoOne(long id) {
         Photo photo = photoDao.selectPhotoOne(id);
@@ -31,6 +87,8 @@ public class PhotoServiceImpl implements PhotoService{
         return null;
     }
 
+
+    @Deprecated
     @Override
     public String getFuncCodeByPhoto(Photo photo) {
         String fc = null;
@@ -40,6 +98,11 @@ public class PhotoServiceImpl implements PhotoService{
         }
         return fc;
     }
+
+
+
+
+
 
     @Override
     public boolean updatePhoto(Photo photo) {
@@ -77,6 +140,20 @@ public class PhotoServiceImpl implements PhotoService{
         return 0;
     }
 
+
+
+
+
+
+
+
+
+
+
+    /**
+     * 测试方法
+     * @param ID
+     */
     @Override
     public void updatePhotoImgId(long ID) {
         photoDao.updatePhotoImgId(ID);

@@ -5,7 +5,7 @@ import com.winchannel.bean.Photo;
 import com.winchannel.dao.IDInfoDao;
 import com.winchannel.data.Constant;
 import com.winchannel.utils.DBUtil;
-import com.winchannel.utils.PropUtil;
+import com.winchannel.cleanUtil.PropUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
