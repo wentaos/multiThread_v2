@@ -2,12 +2,11 @@ package com.winchannel.cleanThread;
 
 import com.winchannel.cleanData.DistId;
 import com.winchannel.cleanUtil.IDPoolPropUtil;
-import com.winchannel.cleanUtil.PropUtil;
-import com.winchannel.data.DistResource;
+import com.winchannel.cleanUtil.OptionPropUtil;
 import com.winchannel.data.Memory;
-import com.winchannel.task.ScheduledTask;
+import com.winchannel.service.PhotoService;
+import com.winchannel.service.impl.PhotoServiceImpl;
 import com.winchannel.utils.DoCleanUtil;
-import com.winchannel.utils.IDInfoUtil;
 import com.winchannel.utils.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -22,8 +21,11 @@ import java.util.List;
 @Scope("prototype")// 多例
 public class CleanThread extends Thread{
     @Autowired
+    private PhotoService photoService = (PhotoServiceImpl)SpringContextUtil.getBean("photoService");
+    @Autowired
     private DoCleanUtil cleanUtil = (DoCleanUtil) SpringContextUtil.getBean("cleanUtil");
-
+    @Autowired
+    private  DistId distId = (DistId) SpringContextUtil.getBean("distId");
     /**
      * ID_POOL
      */
@@ -42,7 +44,7 @@ public class CleanThread extends Thread{
      * run() 中处理多少记录进行一次saveID_POOL()操作
      */
     private int LOOP_SAVE_COUNT
-            = PropUtil.LOOP_SAVE_COUNT();
+            = OptionPropUtil.LOOP_SAVE_COUNT();
 
 
     public CleanThread(){super();}
@@ -101,9 +103,11 @@ public class CleanThread extends Thread{
 //                    Memory.MAX_ID = photoService.getPhotoMaxId();
 //                    DistResource.distId(this.idInfo);// 内部设置 CURR_MAX_ID
 //                    IDInfoUtil.saveIDInfoPoint(idInfo);
-
-
-
+                    // 获取baseQuery中的最大ID
+                    Memory.MAX_ID = photoService.getMaxIdByBaseQuery();
+                    // 分配新的ID_POOL
+                    List<Long> ID_POOL = distId.distIDPool(Memory.DIST_MAX_ID);
+                    this.setID_POOL(ID_POOL);// 为线程重新设置 ID_POOL
                 }
             }
         }

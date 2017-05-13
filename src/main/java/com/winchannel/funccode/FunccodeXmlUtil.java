@@ -103,11 +103,34 @@ public class FunccodeXmlUtil {
     }
 
 
-
-
-
-
-
+    /**
+     * 获取 根据FUNC_CODE查询 img_id的sql
+     * baseFcQuery fcQuery
+     */
+/*
+    public static String[] getBaseFcQuerys(){
+        SAXReader saxReader = new SAXReader();
+        Document document = null;
+        try {
+            document = saxReader.read(new File(resourceFilePath1));
+        } catch (DocumentException e) {
+            e.printStackTrace();
+        }
+        Element root_querys = document.getRootElement();
+        Element baseFcQuery = root_querys.element("baseFcQuery");
+        List<Element> fcQuerys = baseFcQuery.elements();
+        String[] fcQueryArr = null;
+        if(fcQuerys!=null && fcQuerys.size()>0){
+            fcQueryArr = new  String[fcQuerys.size()];
+            for (int i=0;i<fcQuerys.size();i++){
+                String resourceSql = fcQuerys.get(i).getText();
+                resourceSql = cleanSql(resourceSql);
+                fcQueryArr[i] = resourceSql;
+            }
+        }
+        return fcQueryArr;
+    }
+*/
 
 
 

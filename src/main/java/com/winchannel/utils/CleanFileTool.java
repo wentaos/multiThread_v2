@@ -9,7 +9,7 @@ import java.io.OutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
 
 import com.winchannel.bean.Photo;
 import org.slf4j.LoggerFactory;
@@ -135,7 +135,7 @@ public class CleanFileTool {
      * 判断创建 FUNC_CODE 对应的目录
      */
     public static String cleanFuncCodePath(String FUNC_CODE) {
-        String PHOTO_PATH = PropUtil.PHOTO_PATH();
+        String PHOTO_PATH = OptionPropUtil.PHOTO_PATH();
         String funcCodePath = PHOTO_PATH + "/" + FUNC_CODE;
         funcCodePath = createPath(funcCodePath);
         return funcCodePath;
@@ -147,7 +147,7 @@ public class CleanFileTool {
      * imgUrl：/photos/2013-01-01/xxx.jpg
      */
     public static String cleanDatePath(String funcCodePath, String imgUrl) {
-        String PHOTO_PATH = PropUtil.PHOTO_PATH();
+        String PHOTO_PATH = OptionPropUtil.PHOTO_PATH();
         String code_date_path = "";
         String date = "";
         if(imgUrl!=null && imgUrl.trim().length()>0){
@@ -205,7 +205,7 @@ public class CleanFileTool {
      * 加上 FUNC_CODE_PATH
      */
     public static String getNewAbsPath(String absolutePath, String funcCodePath,String date) {
-        String headPath = PropUtil.PHOTO_PATH();// getHeadPath(absolutePath);
+        String headPath = OptionPropUtil.PHOTO_PATH();// getHeadPath(absolutePath);
 //        String datePath = getDatePathFromUrl(absolutePath);
         String fileNamePath = getFileNamePath(absolutePath);
         String newAbsPath = headPath + funcCodePath + "/" + date + "/" + fileNamePath;
@@ -213,7 +213,7 @@ public class CleanFileTool {
     }
 
     public static String getNewAbsPath(String[] paths) {
-        String headPath = PropUtil.PHOTO_PATH();
+        String headPath = OptionPropUtil.PHOTO_PATH();
 //        String datePath = getDatePathFromUrl(paths[0]);
         String fileNamePath = getFileNamePath(paths[0]);
         String newAbsPath = headPath + paths[1] + "/" + paths[2] + "/" + fileNamePath;
@@ -325,7 +325,7 @@ public class CleanFileTool {
      * 剪切文件
      */
     public static boolean movePhoto(String[] paths) {
-        String PHOTO_PATH = PropUtil.PHOTO_PATH();
+        String PHOTO_PATH = OptionPropUtil.PHOTO_PATH();
         String sysSourcePath = PHOTO_PATH
                 + paths[0].replace("/", File.separator);// imgUrl 换成系统的分隔符
         String sysDestPath = paths[1].replace("/", File.separator);// 换成系统的分隔符

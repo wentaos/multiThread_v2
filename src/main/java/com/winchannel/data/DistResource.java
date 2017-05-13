@@ -1,12 +1,12 @@
 package com.winchannel.data;
 
 import com.winchannel.bean.IDInfo;
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
 
 
 public class DistResource {
 
-    private static int REDUCE_ID_NUM = PropUtil.REDUCE_ID_NUM();
+    private static int REDUCE_ID_NUM = OptionPropUtil.REDUCE_ID_NUM();
 
     public static boolean IS_STOP = false;
 

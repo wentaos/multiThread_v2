@@ -4,7 +4,7 @@ import com.winchannel.bean.Photo;
 import com.winchannel.dao.PhotoDao;
 import com.winchannel.funccode.FunccodeXmlUtil;
 import com.winchannel.utils.DBUtil;
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -29,6 +29,10 @@ public class PhotoDaoImpl implements PhotoDao {
     private String passWord;
 
 
+    /**
+     * 是否开启使用 根据 FUNC_CODE查询PhotitId处理数据
+     */
+    boolean IS_FUNC_CODE_PART = OptionPropUtil.IS_FUNC_CODE_PART();
 
 
     /*******************************************新版本增加功能********************************************/
@@ -62,17 +66,17 @@ public class PhotoDaoImpl implements PhotoDao {
 
     @Override
     public List<Long> selectNextIdPoolFromBaseQueryByEndId(Long endId) {
+        List<Long> ID_POOL = null;
         String baseQuerySql = FunccodeXmlUtil.getBaseQuerySql();
-
         // 组装 baseQuerySql eg: select top 100 p.ID from (baseQuerySql);
-        baseQuerySql = "SELECT TOP "+PropUtil.REDUCE_ID_NUM()+" p.ID FROM "
+        baseQuerySql = "SELECT TOP "+ OptionPropUtil.REDUCE_ID_NUM()+" p.ID FROM "
                 +"("+baseQuerySql+") p WHERE p.ID>"+endId;
 
         logger.info("Next ID_POOL: baseQuerySql===>>>"+baseQuerySql);
 
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt = null;
-        List<Long> ID_POOL = null;
+
         try {
             ID_POOL = new ArrayList<Long>();
             pstmt = conn.prepareStatement(baseQuerySql);
@@ -89,6 +93,16 @@ public class PhotoDaoImpl implements PhotoDao {
         logger.info("Next ID_POOL: SIZE===>>>"+ID_POOL.size());
         return ID_POOL;
     }
+
+
+
+
+
+
+
+
+
+
 
 
     @Override
@@ -228,7 +242,58 @@ public class PhotoDaoImpl implements PhotoDao {
 
 
 
+    @Override
+    public List<String> selectImgIdListByFcQuery(String fcQuerySql) {
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        List<String> imgIdList = new ArrayList<String>();
 
+        try {
+            pstmt = conn.prepareStatement(fcQuerySql);
+            rs = pstmt.executeQuery();
+            while (rs.next()){
+                String imgId = rs.getString("IMG_ID");
+                imgIdList.add(imgId);
+            }
+            DBUtil.closeDbResources(conn, pstmt, rs);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return imgIdList;
+    }
+
+
+
+
+    @Override
+    public List<Long> selectPhotoIdListBtImgId(String imgId) {
+        Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        List<Long> photoIdList = new ArrayList<Long>();
+
+        try {
+
+            String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+            String sql = "SELECT ID FROM "+table_name+" WHERE IMG_ID=?";
+            pstmt =  conn.prepareStatement(sql);
+            pstmt.setString(1,imgId);
+            rs = pstmt.executeQuery();
+            while (rs.next()){
+                Long id = rs.getLong("ID");
+                photoIdList.add(id);
+            }
+            DBUtil.closeDbResources(conn, pstmt, rs);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return photoIdList;
+    }
 
 
 
@@ -263,10 +328,9 @@ public class PhotoDaoImpl implements PhotoDao {
     @Override
     public Photo selectPhotoOne(long id) {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
-
         PreparedStatement pstmt;
         Photo photo = null;
-        String table_name = PropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
         try {
             String sql = "SELECT * FROM "+table_name+" WHERE id=?";
             pstmt = conn.prepareStatement(sql);
@@ -298,13 +362,13 @@ public class PhotoDaoImpl implements PhotoDao {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         List<Photo> photoList = new ArrayList<Photo>();
-        String table_name = PropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
         try {
             // 按照 ID 排序得到第一个
         	String oneSql = "";
-        	if(PropUtil.IS_MYSQL()){
+        	if(OptionPropUtil.IS_MYSQL()){
         		oneSql = "SELECT ID,IMG_ID,IMG_URL,ABSOLUTE_PATH from "+table_name+" ORDER BY ID LIMIT 1";
-        	} else if (PropUtil.IS_SQLSERVER()){
+        	} else if (OptionPropUtil.IS_SQLSERVER()){
         		oneSql = "SELECT top 1 ID,IMG_ID,IMG_URL,ABSOLUTE_PATH from "+table_name+" ORDER BY ID";
         	}
             pstmt = conn.prepareStatement(oneSql);
@@ -335,7 +399,7 @@ public class PhotoDaoImpl implements PhotoDao {
     public String getFuncCodeByImgId(String imgId) {
         String[] tabNames = null;
         String funcCode = null;
-        if(PropUtil.IS_TEST()){
+        if(OptionPropUtil.IS_TEST()){
         	tabNames = new String[]{"VISIT_INOUT_STORE_T", "MS_VISIT_ACVT_T", "VISIT_DIST_RULE_T", "VISIT_SEC_DISP_T"};
         } else {
         	tabNames = new String[]{"VISIT_INOUT_STORE", "MS_VISIT_ACVT", "VISIT_DIST_RULE", "VISIT_SEC_DISP"};
@@ -376,7 +440,7 @@ public class PhotoDaoImpl implements PhotoDao {
         try {
         	String IMG_ID_COL_NAME = "IMG_IDX";
         	String MS_VISIT_ACVT = "MS_VISIT_ACVT";
-        	 if(PropUtil.IS_TEST()){
+        	 if(OptionPropUtil.IS_TEST()){
         		 MS_VISIT_ACVT = "MS_VISIT_ACVT_T";
         	 }
         	
@@ -408,7 +472,7 @@ public class PhotoDaoImpl implements PhotoDao {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         
-        String table_name = PropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
         
         // 设置事务为非自动提交
         try{
@@ -442,13 +506,13 @@ public class PhotoDaoImpl implements PhotoDao {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         
-        String table_name = PropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
         
         try{
             String oneSql = "SELECT top 1 max(ID) ID FROM "+table_name+"";
-        	if(PropUtil.IS_MYSQL()){
+        	if(OptionPropUtil.IS_MYSQL()){
         		oneSql = "SELECT max(ID) ID FROM "+table_name+" LIMIT 1";
-        	} else if (PropUtil.IS_SQLSERVER()){
+        	} else if (OptionPropUtil.IS_SQLSERVER()){
         		oneSql = "SELECT top 1 max(ID) ID FROM "+table_name+"";
         	}
         	
@@ -479,13 +543,13 @@ public class PhotoDaoImpl implements PhotoDao {
 		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         
-        String table_name = PropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
         
         try{
             String sql = "";
-            if(PropUtil.IS_MYSQL()){
+            if(OptionPropUtil.IS_MYSQL()){
             	sql = "SELECT min(ID) ID FROM "+table_name+" LIMIT 1";
-        	} else if (PropUtil.IS_SQLSERVER()){
+        	} else if (OptionPropUtil.IS_SQLSERVER()){
         		sql = "SELECT top 1 min(ID) ID FROM "+table_name+"";
         	}
             pstmt = conn.prepareStatement(sql);
@@ -522,7 +586,7 @@ public class PhotoDaoImpl implements PhotoDao {
 	public void updatePhotoImgId(long ID) {
 		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
-        String table_name = PropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
         try{
             String sql = "update "+table_name+" set IMG_ID='img_id_ok' WHERE ID=?";
             pstmt = conn.prepareStatement(sql);
@@ -542,7 +606,7 @@ public class PhotoDaoImpl implements PhotoDao {
 	public void insertPhoto(Photo photo) {
 		Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
-        String table_name = PropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
         try{
             String photoSql = "insert into "+table_name+"(ID,IMG_ID,IMG_URL,ABSOLUTE_PATH)"+" VALUES(?,?,?,?)";
             pstmt = conn.prepareStatement(photoSql);

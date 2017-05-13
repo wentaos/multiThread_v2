@@ -2,7 +2,7 @@ package com.winchannel.task;
 
 import com.winchannel.dao.PhotoDao;
 import com.winchannel.utils.DateUtil;
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
@@ -23,7 +23,7 @@ public class Test_AddTestData {
     public void addTestData(){
     	
     	// 图片文件处理目录
-        String filePath = PropUtil.PHOTO_PATH();
+        String filePath = OptionPropUtil.PHOTO_PATH();
     	
         // 需要复制的图片原文件
         File sourceFile = new File("D:"+File.separator+"Photo_Test"+File.separator+"photo.jpg");

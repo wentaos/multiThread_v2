@@ -8,7 +8,7 @@ import java.io.OutputStream;
 import java.util.Properties;
 
 
-public class PropUtil {
+public class OptionPropUtil {
 
     /**
      * 资源文件
@@ -206,8 +206,8 @@ public class PropUtil {
     }
 
     /**
-     * IS_FUNC_CODE_PART
-     * 是否处理一部分 FUNC_CODE
+     * FUNC_CODE_LIST
+     * 获取 FUNC_CODE_LIST
      */
     public static String[] FUNC_CODE_LIST(){
         String[] funcodes = null;
@@ -247,7 +247,7 @@ public class PropUtil {
     public static String getValue(String key){
         String value = null;
         try{
-            InputStream in = PropUtil.class.getClassLoader().getResourceAsStream(resourceFilePath);
+            InputStream in = OptionPropUtil.class.getClassLoader().getResourceAsStream(resourceFilePath);
             prop.load(in);
             value = prop.getProperty(key);
         }catch (Exception e){
@@ -258,7 +258,7 @@ public class PropUtil {
 
     public static void setValue(String key,String value){
         try{
-            String path = PropUtil.class.getClassLoader().getResource(resourceFilePath).getPath();
+            String path = OptionPropUtil.class.getClassLoader().getResource(resourceFilePath).getPath();
             OutputStream out = new FileOutputStream(path,false);
             prop.setProperty(key,value);
             prop.store(out, key);

@@ -17,24 +17,12 @@
     注意：该查询不使用别名
     ID,IMG_ID,IMG_URL,ABSOLUTE_PATH 为基本字段。目前不需要改动，只需要些查询条件即可
     -->
-    <!--如果想处理哪些 FUNC_CODE的数据，请使用sql关联查询，通用性更高，更灵活
-    示例：请根据VISIT_PHOTO表中的IMG_ID字段关联
-        SELECT
-            ID,IMG_ID,IMG_URL,ABSOLUTE_PATH
-        FROM
-            VISIT_PHOTO
-        WHERE IMG_ID in (
-            SELECT IMG_ID AS IMG_ID FROM MS_VISIT_ACVT WHERE FUNC_CODE='FAC_500'
-        )
-    -->
     <baseQuery>
         SELECT
             ID,IMG_ID,IMG_URL,ABSOLUTE_PATH
         FROM VISIT_PHOTO
         WHERE ID>1000
     </baseQuery>
-
-
 
     <!-- select_SPE 查询SPE定制的 * N
     '${imgId}': 对应VISIT_PHOTO表中的IMG_ID
@@ -65,14 +53,48 @@
 
 
 
+    <!-- **************************************************************************************** -->
+    <!--  该部分是需要根据FUNC_CODE进行处理数据的配置，如果使用，需要在option.properties中开启 IS_FUNC_CODE_PART=true
+            这里只需要配置相关的业务表
+     -->
+    <!-- **************************************************************************************** -->
+
+    <!--示例:
+    <dependency_FC> :只配置一个
+    <biz_Table> :可配置多个
+    <photo_img_id> :是业务表中的对应于 VISIT_PHOTO 中的img_id字段名称(有事的IMG_IDX，有的是IMG_ID)
+    <func_code> :需要处理得FUNC_CODE,多个FUNC_CODE使用逗号分割(英文输入状态下)
+    -->
+    <dependency_FC>
+
+        <biz_Table name="VISIT_INOUT_STORE">
+            <photo_img_id>IMG_IDX</photo_img_id>
+            <func_code>F100S01</func_code>
+        </biz_Table>
+
+        <biz_Table name="MS_VISIT_ACVT">
+            <photo_img_id>IMG_ID</photo_img_id>
+            <func_code>FAC_500,FAC_501</func_code>
+        </biz_Table>
+
+    </dependency_FC>
 
 
 
-
-
-
-
-
+    <baseFcQuery>
+        <fcQuery>
+            SELECT
+                IMG_IDX AS IMG_ID
+            FROM VISIT_INOUT_STORE
+            WHERE FUNC_CODE in ('FAC_500','FAC_501')
+        </fcQuery>
+        <fcQuery>
+            SELECT
+                IMG_IDX AS IMG_ID
+            FROM MS_VISIT_ACVT
+            WHERE FUNC_CODE in ('FAC_500','FAC_501')
+        </fcQuery>
+    </baseFcQuery>
 
 
 

@@ -5,7 +5,7 @@ import com.winchannel.bean.Photo;
 import com.winchannel.dao.IDInfoDao;
 import com.winchannel.data.Constant;
 import com.winchannel.utils.DBUtil;
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -30,12 +30,12 @@ public class IDInfoDaoImpl  implements IDInfoDao {
     public void insertInfoPhoto(Photo prop) {
         Connection conn = DBUtil.getConnection(driver, dbUrl, userName, passWord);
         PreparedStatement pstmt;
-        String table_name = PropUtil.IS_TEST() ? "VISIT_PHOTO_T" : "VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST() ? "VISIT_PHOTO_T" : "VISIT_PHOTO";
         table_name="VISIT_PHOTO";
 
         try {
             String sql = "INSERT INTO " + table_name + "(ID,IMG_ID,IMG_URL) VALUES(?,?,?)";
-            if(PropUtil.IS_TEST()){
+            if(OptionPropUtil.IS_TEST()){
                 sql = "INSERT INTO " + table_name + "(ID,IMG_ID,IMG_URL) VALUES(?,?,?)";
             }
 
@@ -56,7 +56,7 @@ public class IDInfoDaoImpl  implements IDInfoDao {
     public void updateInfoPhoto(Photo prop) {
         Connection conn = DBUtil.getConnection(driver, dbUrl, userName, passWord);
         PreparedStatement pstmt;
-        String table_name = PropUtil.IS_TEST() ? "VISIT_PHOTO_T" : "VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST() ? "VISIT_PHOTO_T" : "VISIT_PHOTO";
         table_name="VISIT_PHOTO";
 
         try {
@@ -78,7 +78,7 @@ public class IDInfoDaoImpl  implements IDInfoDao {
         Connection conn = DBUtil.getConnection(driver,dbUrl,userName,passWord);
         PreparedStatement pstmt;
         Photo photo = null;
-        String table_name = PropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
+        String table_name = OptionPropUtil.IS_TEST()?"VISIT_PHOTO_T":"VISIT_PHOTO";
         table_name="VISIT_PHOTO";
 
         try {

@@ -34,8 +34,6 @@
         WHERE ID>1000
     </baseQuery>
 
-
-
     <!-- select_SPE 查询SPE定制的 * N
     '${imgId}': 对应VISIT_PHOTO表中的IMG_ID
 
@@ -58,6 +56,45 @@
 
 
 
+
+
+
+
+    <!-- **************************************************************************************** -->
+    <!--  该部分是需要根据FUNC_CODE进行处理数据的配置，如果使用，需要在option.properties中开启 IS_FUNC_CODE_PART=true
+            这里只需要配置相关的业务表
+     -->
+    <!-- **************************************************************************************** -->
+    <!-- 示例
+        <baseFcQuery> :只能配置一个
+        <fcQuery> :在这里写根据 FUNC_CODE查询的sql，其中 需要查出对应与VISIT_PHOTO表中的 IMG_ID 字段信息； <fcQuery>可配置多个
+            对应的img_id需要使用别名 AS IMG_ID
+    -->
+    <baseFcQuery>
+        <fcQuery>
+            SELECT
+                IMG_IDX AS IMG_ID
+            FROM VISIT_INOUT_STORE
+            WHERE FUNC_CODE in ('FAC_500','FAC_501')<!--这里的sql最好写成 FUNC_CODE='Fxxx' 程序处理速度会快一些，建议一个一个FUNC_CODE 处理-->
+        </fcQuery>
+        <fcQuery>
+            SELECT
+                IMG_ID AS IMG_ID
+            FROM MS_VISIT_ACVT
+            WHERE FUNC_CODE in ('FAC_500','FAC_501')
+        </fcQuery>
+
+        <fcQuery>
+            SELECT
+                ID,IMG_ID,IMG_URL,ABSOLUTE_PATH
+            FROM
+                VISIT_PHOTO
+            WHERE IMG_ID in (
+                SELECT IMG_ID AS IMG_ID FROM MS_VISIT_ACVT WHERE FUNC_CODE='FAC_500'
+            )
+        </fcQuery>
+
+    </baseFcQuery>
 
 
 

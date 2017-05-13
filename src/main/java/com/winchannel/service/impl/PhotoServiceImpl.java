@@ -55,17 +55,14 @@ public class PhotoServiceImpl implements PhotoService{
     }
 
 
+    @Override
+    public List<Long> getPhotoIdByFcQuerys() {
 
 
 
 
-
-
-
-
-
-
-
+        return null;
+    }
 
 
 

@@ -8,7 +8,7 @@ import com.winchannel.thread.DoCleanThread;
 import com.winchannel.thread.IDPoolCleanThread;
 import com.winchannel.utils.IDInfoUtil;
 import com.winchannel.utils.LogUtil;
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -26,9 +26,9 @@ public class ScheduledTask {
 //    Calendar calendar = Calendar.getInstance();
 
     // 线程数:默认10
-    int THREAD_NUM = PropUtil.THREAD_NUM();
+    int THREAD_NUM = OptionPropUtil.THREAD_NUM();
     // 存放 ID_INFO 信息的文件路径配置
-    String ID_INFO_PATH = PropUtil.ID_INFO_PATH();
+    String ID_INFO_PATH = OptionPropUtil.ID_INFO_PATH();
 
     // 上次程序运行线程数目
     int HIS_THREAD_NUM = IDInfoUtil.getHIS_THREAD_NUM();

@@ -1,17 +1,18 @@
 package com.winchannel.cleanData;
 
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.IDPoolPropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
+import com.winchannel.data.Memory;
 import com.winchannel.service.PhotoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * 新版本ID资源分发
  */
-@Component
+@Component("distId")
 public class DistId {
     @Autowired
     private PhotoService photoService;
@@ -20,7 +21,7 @@ public class DistId {
     /**
      * 每次给一个线程分配的ID数
      */
-    private static int REDUCE_ID_NUM = PropUtil.REDUCE_ID_NUM();
+    private static int REDUCE_ID_NUM = OptionPropUtil.REDUCE_ID_NUM();
 
     /**
      * 如果ID资源分配完毕了，那么该值为true,接触到的线程需要停止分配资源了
@@ -50,7 +51,10 @@ public class DistId {
             }/*else {
                 IS_STOP = false;
             }*/
-
+            // 将刚分配的最大ID作为当前已分配的最大ID
+            Memory.DIST_MAX_ID = ID_POOL.get(ID_POOL.size()-1);
+            // 分配后保存成历史最大ID
+            IDPoolPropUtil.saveMaxIdPoint();
         }
         return ID_POOL;
     }

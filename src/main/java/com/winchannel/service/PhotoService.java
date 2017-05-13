@@ -17,8 +17,7 @@ public interface PhotoService {
 
     List<Long> getNextIdPoolFromBaseQueryByEndId(Long endId);
 
-
-
+    List<Long> getPhotoIdByFcQuerys();
 
 
 

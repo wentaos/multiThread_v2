@@ -1,7 +1,7 @@
 package com.winchannel.utils;
 
 import com.winchannel.bean.IDInfo;
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
 import com.winchannel.data.Constant;
 
 import java.io.*;
@@ -14,7 +14,7 @@ public class IDInfoUtil {
 
     private static String resourceFile = "ID_INFO.properties";
 
-    private static String ID_INFO_PATH = PropUtil.ID_INFO_PATH();
+    private static String ID_INFO_PATH = OptionPropUtil.ID_INFO_PATH();
 
     private static String resourceFilePath = ID_INFO_PATH+resourceFile;
     private static Properties prop = new Properties();
@@ -147,16 +147,7 @@ public class IDInfoUtil {
         return setValue(Constant.HIS_THREAD_NUM,HIS_THREAD_NUM+"");
     }
 
-    /**
-     * 获取历史线程数
-     */
-    public  static int getHIS_THREAD_NUM(){
-        String value = getValue(Constant.HIS_THREAD_NUM);
-        if(value!=null && value.trim().length()>0){
-            return Integer.parseInt(value);
-        }
-        return 0;
-    }
+
 
 
     /**

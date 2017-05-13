@@ -11,7 +11,7 @@ import com.winchannel.service.impl.PhotoServiceImpl;
 import com.winchannel.task.ScheduledTask;
 import com.winchannel.utils.DoCleanUtil;
 import com.winchannel.utils.IDInfoUtil;
-import com.winchannel.cleanUtil.PropUtil;
+import com.winchannel.cleanUtil.OptionPropUtil;
 import com.winchannel.utils.SpringContextUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -80,7 +80,7 @@ public class DoCleanThread extends Thread {
                 // cleanUtil.wait(100);
 
                 // 检查LOOP次数 是否满100*N，是则update ID信息
-                if(loop_count==PropUtil.LOOP_SAVE_COUNT()){
+                if(loop_count== OptionPropUtil.LOOP_SAVE_COUNT()){
                     IDInfoUtil.saveIDInfoPoint(idInfo);
                     loop_count=0;
                 }
